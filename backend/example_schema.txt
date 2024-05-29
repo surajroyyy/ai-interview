@@ -1,0 +1,18 @@
+session = {
+    session_id: session_id,
+    start_time: start_time,
+    end_time: end_time,
+    recordings: {[
+        {
+            "file_path": filepath,
+            "file_name": filename,
+            "timestamp": timestamp
+        },
+        {
+            "file_path": filepath,
+            "file_name": filename,
+            "timestamp": timestamp
+        },...
+    ]}
+    status: completed
+}

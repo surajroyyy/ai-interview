@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from pymongo import MongoClient
+import os
 
 app = Flask(__name__)
 client = MongoClient('mongodb://localhost:27017/')
@@ -43,16 +44,38 @@ def end_interview(session_id):
 
     return jsonify({"message": "Interview ended succesfully", "session_id": session_id}), 200
 
-@app.route('/api/interviews/<session_id>/record/start', methods=['POST'])
-def start_recording(session_id):
-    # Start recording logic (client-side)
-    return jsonify({"message": "Recording begun", "session_id": session_id}), 200
+UPLOAD_FOLDER = 'uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-@app.route('/api/interviews/<session_id>/record/stop', methods=['POST'])
-def stop_recording(session_id):
-    # Stop recording logic (client-side)
-    # Store recordings in storage (MongoDB)
-    return jsonify({"message": "Recording ended", "session_id": session_id}), 200
+@app.route('/api/interviews/<session_id>/record/', methods=['POST'])
+def start_recording(session_id):
+    import uuid
+    # Start recording logic (client-side)
+    if 'audio' not in request.files:
+        return jsonify({"error": "No audio file found"}), 404
+    
+    audio = request.files['audio']
+    filename = f"audio-{uuid.uuid4()}.mp3"
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    audio.save(filepath)
+
+    timestamp = request.files['startTime']
+
+    recording_data = {
+        "file_path": filepath,
+        "file_name": filename,
+        "timestamp": timestamp
+    }
+
+    return jsonify({"message": "Recording saved successfully", "session_id": session_id}), 200
+
+# @app.route('/api/interviews/<session_id>/record/stop', methods=['POST'])
+# def stop_recording(session_id):
+#     # Stop recording logic (client-side)
+#     # Store recordings in storage (MongoDB)
+#     return jsonify({"message": "Recording ended", "session_id": session_id}), 200
 
 @app.route('/api/interviews/<session_id>/process', methods=['POST'])
 def process_recording(session_id):
