@@ -9,7 +9,7 @@ db = client.interview_db
 def home():
     return 'Welcome to your interview! I am a mini Apriora clone.'
 
-@app.route('api/interviews', methods=['POST'])
+@app.route('/api/interviews', methods=['POST'])
 def start_interview():
     # Begin session and recording
     # Store session ID in storage
@@ -23,21 +23,20 @@ def start_interview():
 
     return jsonify({"message": "Interview begun", "session_id": session_id}), 201
 
-@app.route('api/interviews/<session_id>/end', methods=['POST'])
+@app.route('/api/interviews/<session_id>/end', methods=['POST'])
 def end_interview(session_id):
     import datetime
     # End session
     # Update session status in storage
-
     sessions = db.sessions
-    session = sessions.find_one({"session_id": session_id},
-                                {"$set": {"end_time": end_time, "status": "completed"}})
+    session = sessions.find_one({"session_id": session_id})
 
     if not session:
         return jsonify({"error": "Session not found"}), 404
     
     end_time = datetime.datetime.now()
-    updated_session = sessions.update_one({"session_id": session_id})
+    updated_session = sessions.update_one({"session_id": session_id},
+                                          {"$set": {"end_time": end_time, "status": "completed"}})
 
     if updated_session.modified_count == 0:
         return jsonify({"error": "Session could not be updated"}), 500
