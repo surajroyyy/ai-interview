@@ -1,8 +1,10 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 from pymongo import MongoClient
 import os
 
 app = Flask(__name__)
+CORS(app)
 client = MongoClient('mongodb://localhost:27017/')
 db = client.interview_db
 
@@ -54,7 +56,7 @@ def record(session_id):
     import uuid
     # Start recording logic (client-side)
     if 'audio' not in request.files:
-        return jsonify({"error": "No audio file found"}), 404
+        return jsonify({"error": "No audio file found"}), 400
     
     audio = request.files['audio']
     filename = f"audio-{uuid.uuid4()}.mp3"
