@@ -10,7 +10,7 @@ db = client.interview_db
 def home():
     return 'Welcome to your interview! I am a mini Apriora clone.'
 
-@app.route('/api/interviews', methods=['POST'])
+@app.route('/api/interviews/start', methods=['POST'])
 def start_interview():
     # Begin session and recording
     # Store session ID in storage
@@ -50,7 +50,7 @@ if not os.path.exists(UPLOAD_FOLDER):
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route('/api/interviews/<session_id>/record/', methods=['POST'])
-def start_recording(session_id):
+def record(session_id):
     import uuid
     # Start recording logic (client-side)
     if 'audio' not in request.files:
@@ -61,7 +61,7 @@ def start_recording(session_id):
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     audio.save(filepath)
 
-    timestamp = request.files['startTime']
+    timestamp = request.form.get('startTime')
 
     recording_data = {
         "file_path": filepath,
@@ -69,7 +69,16 @@ def start_recording(session_id):
         "timestamp": timestamp
     }
 
-    return jsonify({"message": "Recording saved successfully", "session_id": session_id}), 200
+    sessions = db.sessions
+    result = sessions.update_one(
+        {"session_id": session_id},
+        {"$push": {"recordings": recording_data}}
+    )
+
+    if result.matched_count == 0:
+        return jsonify({"error": "Session not found"}), 404
+
+    return jsonify({"message": "Recording saved successfully", "file_path": filepath, "session_id": session_id}), 200
 
 # @app.route('/api/interviews/<session_id>/record/stop', methods=['POST'])
 # def stop_recording(session_id):
