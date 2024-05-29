@@ -26,3 +26,6 @@ yarn-error.log*
 venv/
 *.log
 *.pyc
+
+package-lock.json
+package.json
