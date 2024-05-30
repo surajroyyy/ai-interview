@@ -26,3 +26,5 @@ yarn-error.log*
 venv/
 *.log
 *.pyc
+
+/backend/uploads

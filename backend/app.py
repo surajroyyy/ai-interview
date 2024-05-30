@@ -1,8 +1,14 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 from pymongo import MongoClient
+from openai import OpenAI
 import os
 
+API_KEY = "sk-proj-Afz7UVKlb8n6WVYYGTgNT3BlbkFJR6u07K4xuIeEMgRVvR9S"
+openai_client = OpenAI(api_key=API_KEY)
+
 app = Flask(__name__)
+CORS(app)
 client = MongoClient('mongodb://localhost:27017/')
 db = client.interview_db
 
@@ -10,7 +16,7 @@ db = client.interview_db
 def home():
     return 'Welcome to your interview! I am a mini Apriora clone.'
 
-@app.route('/api/interviews', methods=['POST'])
+@app.route('/api/interviews/start', methods=['POST'])
 def start_interview():
     # Begin session and recording
     # Store session ID in storage
@@ -50,18 +56,25 @@ if not os.path.exists(UPLOAD_FOLDER):
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route('/api/interviews/<session_id>/record/', methods=['POST'])
-def start_recording(session_id):
+def record(session_id):
     import uuid
+    
     # Start recording logic (client-side)
     if 'audio' not in request.files:
-        return jsonify({"error": "No audio file found"}), 404
+        return jsonify({"error": "No audio file found"}), 400
     
     audio = request.files['audio']
     filename = f"audio-{uuid.uuid4()}.mp3"
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     audio.save(filepath)
+    timestamp = request.form.get('startTime')
 
-    timestamp = request.files['startTime']
+    # Transcribe message from audio file
+    audio_file = open(filepath, "rb")
+    transcription = openai_client.audio.transcriptions.create(
+        model="whisper-1",
+        file=audio_file
+    )        
 
     recording_data = {
         "file_path": filepath,
@@ -69,7 +82,16 @@ def start_recording(session_id):
         "timestamp": timestamp
     }
 
-    return jsonify({"message": "Recording saved successfully", "session_id": session_id}), 200
+    sessions = db.sessions
+    result = sessions.update_one(
+        {"session_id": session_id},
+        {"$push": {"recordings": recording_data, "transcript": transcription.text}}
+    )
+
+    if result.matched_count == 0:
+        return jsonify({"error": "Session not found"}), 404
+
+    return jsonify({"message": "Recording saved successfully", "file_path": filepath, "timestamp": timestamp, "session_id": session_id}), 200
 
 # @app.route('/api/interviews/<session_id>/record/stop', methods=['POST'])
 # def stop_recording(session_id):

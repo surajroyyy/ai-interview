@@ -1,26 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import RecordingComponent from './components/RecordingComponent';
+import StartInterviewComponent from './components/StartInterviewComponent';
 
 function App() {
+
+  const [sessionId, setSessionid] = useState<string | null>(null);
+
+  const handleStart = (id: string) => {
+    setSessionid(id)
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and fart to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+      <header>
+        <h1>Welcome to your</h1>
+        <h1>Interview</h1>
       </header>
+      <body>
+        {!sessionId? (
+          <StartInterviewComponent onStart={handleStart}/>
+        ) : (
+          <RecordingComponent sessionId={sessionId}/>
+        )}
+      </body>
     </div>
   );
+
 }
 
 export default App;
