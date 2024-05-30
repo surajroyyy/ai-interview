@@ -12,7 +12,8 @@ API_KEY = "sk-proj-Afz7UVKlb8n6WVYYGTgNT3BlbkFJR6u07K4xuIeEMgRVvR9S"
 openai_client = OpenAI(api_key=API_KEY)
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'build'), static_url_path='')
-CORS(app, resources={r"/*": {"origins": "https://apriora-mini-e267c62bc01a.herokuapp.com"}})
+# CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app)
 socketio = SocketIO(app, cors_allowed_origins='*')
 
 mongo_uri = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')

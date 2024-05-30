@@ -15,12 +15,16 @@ const ChatComponent: React.FC<ChatComponentProps> = ({sessionId}) => {
     useEffect(() => {
         const socket = io(API_URL);
         socket.on('sync_chat', (data) => {
-            setConversation(prev => [...prev, data]);
+            if (conversation.length == 0) {
+                setConversation([data])
+            } else {
+                setConversation(prev => [...prev, data]);
+            }
         });
 
-        axios.get(API_URL + 'api/interviews/' + sessionId + '/sync_chat')
-            .then(response => setConversation(response.data))
-            .catch(error => console.error('Error fetching conversation:', error));
+        // axios.get(API_URL + 'interviews/' + sessionId + '/sync_chat')
+        //     .then(response => setConversation(response.data))
+        //     .catch(error => console.error('Error fetching conversation:', error));
 
         return () => {socket.off('sync_chat')};
     }, [sessionId]);
