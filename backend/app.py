@@ -11,7 +11,7 @@ import requests
 API_KEY = "sk-proj-Afz7UVKlb8n6WVYYGTgNT3BlbkFJR6u07K4xuIeEMgRVvR9S"
 openai_client = OpenAI(api_key=API_KEY)
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='src/build', static_url_path='')
 CORS(app,resources={r"/*":{"origins":"*"}})
 socketio = SocketIO(app, cors_allowed_origins='*')
 
