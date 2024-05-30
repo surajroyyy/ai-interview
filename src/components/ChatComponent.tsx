@@ -3,6 +3,8 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import "../index.css"
 
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/";
+
 interface ChatComponentProps {
     sessionId: string;
 }
@@ -11,12 +13,12 @@ const ChatComponent: React.FC<ChatComponentProps> = ({sessionId}) => {
     const [conversation, setConversation] = useState<string[]>([]);
 
     useEffect(() => {
-        const socket = io('http://localhost:5000');
+        const socket = io(API_URL);
         socket.on('sync_chat', (data) => {
             setConversation(prev => [...prev, data]);
         });
 
-        axios.get('http://localhost:5000/api/interviews/' + sessionId + '/sync_chat')
+        axios.get(API_URL + 'api/interviews/' + sessionId + '/sync_chat')
             .then(response => setConversation(response.data))
             .catch(error => console.error('Error fetching conversation:', error));
 

@@ -1,8 +1,10 @@
 from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
+from flask_pymongo import PyMongo
 from pymongo import MongoClient
 from openai import OpenAI
+from dotenv import load_dotenv
 import os
 import requests
 
@@ -12,9 +14,13 @@ openai_client = OpenAI(api_key=API_KEY)
 app = Flask(__name__)
 CORS(app,resources={r"/*":{"origins":"*"}})
 socketio = SocketIO(app, cors_allowed_origins='*')
-client = MongoClient('mongodb://localhost:27017/') # Change from localhost
+
+mongo_uri = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
+client = MongoClient(mongo_uri)
 db = client.interview_db
 assistant_id = None
+
+api_url = os.getenv('REACT_APP_API_URL', 'http://localhost:5000/')
 
 # Instantiating upload folder for server side audio storage
 UPLOAD_FOLDER = 'uploads'
@@ -211,7 +217,7 @@ def record(session_id):
     # Update frontend
     socketio.emit('sync_chat', transcription.text)
     # Change from localhost
-    response = requests.post(f'http://localhost:5000/api/interviews/{session_id}/process_response/', json={'transcription': transcription.text}) 
+    response = requests.post(f'{api_url}/api/interviews/{session_id}/process_response/', json={'transcription': transcription.text}) 
     return jsonify(response.json()), 200
 
 # Flask route to get entire conversation by session id

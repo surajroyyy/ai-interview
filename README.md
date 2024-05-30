@@ -42,7 +42,9 @@ session = {
 ```
 
 ## Things to consider
-So with the above database, it would be easy to create the side-by-side video replay and live transcript after the interview has ended. Unfortunately, due to time constraints, I was not able to implement this portion. However, I have set myself up to complete it rather quickly if I had more time (as all the voice recordings and timestamps are stored neatly in Mongo). On this note, I need a bit more time to make the AI audio response play in real-time. Additionally, I wish I were able to implement a pause feature into the AI response when the candidate cuts their interviewer off. Also, to be more efficient, I could have stored the "Welcome" message, as a lone entry somewhere in the database (since it is a consistent message). Finally, I could have organized the MongoDB to have one database for the session entries, one for recordings, and one for the transcripts (simply to make organization and lookup more readable).
+So with the above database, it would be easy to create the side-by-side video replay and live transcript after the interview has ended. Unfortunately, due to time constraints, I was not able to implement this portion. However, I have set myself up to complete it rather quickly if I had more time (as all the voice recordings and timestamps are stored neatly in Mongo). On this note, I need a bit more time to make the AI audio response play in real-time. 
+
+Additionally, I wish I were able to implement a pause feature into the AI response when the candidate cuts their interviewer off. Also, to be more efficient, I could have stored the "Welcome" message, as a lone entry somewhere in the database (since it is a consistent message). Finally, I could have organized the MongoDB to have one database for the session entries, one for recordings, and one for the transcripts (simply to make organization and lookup more readable).
 
 ## Things I accomplished
 - Polished UI

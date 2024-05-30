@@ -18,9 +18,19 @@ header {
   font-weight: 900;
 }
 
+.end-title {
+  font-weight: 700;
+  color: #333333;
+  font-size: 25px;
+}
+
 .interview {
   color: #6684ff;
   font-weight: 900;
+}
+
+.end-deco {
+  color: coral
 }
 
 .content {

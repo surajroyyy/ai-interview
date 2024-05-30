@@ -3,6 +3,8 @@ import { ReactMic } from 'react-mic';
 import axios from 'axios';
 import "../index.css"
 
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/";
+
 interface RecordingComponentProps {
     sessionId: string;
 }
@@ -28,7 +30,7 @@ const RecordingComponent: React.FC<RecordingComponentProps> = ({sessionId}) => {
       const formData = new FormData();
       formData.append('audio', recordedBlob.blob, 'recording.wav');
       formData.append('startTime', startTime || '')
-      axios.post('http://localhost:5000/api/interviews/' + sessionId + '/record', formData)
+      axios.post(API_URL + 'api/interviews/' + sessionId + '/record', formData)
         .then(response => {
           console.log('Audio file successfully sent to the server', response.data);
           console.log("startTime: ", startTime);
