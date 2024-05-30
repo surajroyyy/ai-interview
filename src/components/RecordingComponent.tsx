@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { ReactMic } from 'react-mic';
 import axios from 'axios';
 
-const RecordingComponent: React.FC = () => {
+interface RecordingComponentProps {
+    sessionId: string;
+}
+
+const RecordingComponent: React.FC<RecordingComponentProps> = ({sessionId}) => {
     const [record, setRecord] = useState(false);
     const [blobURL, setBlobURL] = useState('');
     const [startTime, setStartTime] = useState<string | null>(null)
@@ -23,7 +27,8 @@ const RecordingComponent: React.FC = () => {
       const formData = new FormData();
       formData.append('audio', recordedBlob.blob, 'recording.wav');
       formData.append('startTime', startTime || '')
-      axios.post('http://localhost:5000/api/interviews/record', formData)
+      console.log(startTime)
+      axios.post('http://localhost:5000/api/interviews/' + sessionId + '/record', formData)
         .then(response => {
           console.log('Audio file successfully sent to the server', response.data);
         })
