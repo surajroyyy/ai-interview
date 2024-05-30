@@ -1,4 +1,4 @@
-from flask import Flask, Response, jsonify, request
+from flask import Flask, Response, jsonify, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 from flask_pymongo import PyMongo
@@ -11,7 +11,7 @@ import requests
 API_KEY = "sk-proj-Afz7UVKlb8n6WVYYGTgNT3BlbkFJR6u07K4xuIeEMgRVvR9S"
 openai_client = OpenAI(api_key=API_KEY)
 
-app = Flask(__name__, static_folder='src/build', static_url_path='')
+app = Flask(__name__, static_folder='./build', static_url_path='')
 CORS(app,resources={r"/*":{"origins":"*"}})
 socketio = SocketIO(app, cors_allowed_origins='*')
 
@@ -41,6 +41,14 @@ PROMPT = "You are an recruiter, interviewing for a software engineering I positi
 WELCOME = "Welcome to your virtual AI Interview. I am Apriora's little brother. \
             I will be interviewing you today for your role of Software Engineer I! \
             Why don't you go ahead and tell me about yourself."
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    if path != "" and os.path.exists(app.static_folder + '/' + path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/')
 def home():
