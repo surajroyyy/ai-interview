@@ -9,7 +9,7 @@ interface EndButtonProps {
 const EndButtonComponent: React.FC<EndButtonProps> = ({sessionId}) => {
     const handleClick = async () => {
         try {
-            const response = await axios.post('http://localhost:5000/api/interviews/' + sessionId + '/end');
+            await axios.post('http://localhost:5000/api/interviews/' + sessionId + '/end');
         } catch (error) {
             console.log('Issue ending the interview', error)
         }

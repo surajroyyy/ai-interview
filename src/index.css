@@ -1,9 +1,3 @@
-/* header {
-  background-color: #333333;
-  color: white;
-  top: 0;
-} */
-
 header {
   position: absolute;
   top: 0;
@@ -30,12 +24,12 @@ header {
 }
 
 .content {
-  margin-top: 7.5%; /* Push content below the header */
+  margin-top: 7.5%; 
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 87.5%; /* Remaining height of the page */
+  height: 87.5%;
 }
 
 code {
@@ -97,28 +91,28 @@ code {
 }
 
 .start-recording i, .stop-recording i {
-  font-size: 16px; /* Font size of the icons */
-  color: #333; /* Dark gray icon color */
+  font-size: 16px;
+  color: #333; 
 }
 
 .start-recording:hover i {
-  color: #6684ff; /* Blue icon color on hover */
+  color: #6684ff; 
 }
 
 .start-recording:focus i {
-  color: #6684ff; /* Blue icon color on hover */
+  color: #6684ff; 
 }
 
 .stop-recording:hover i {
-  color: #ff0000; /* Red icon color on hover */
+  color: #ff0000; 
 }
 
 .recorder-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 33%; /* 1/4 of the page */
-  margin: 0 auto; /* Center the container */
+  width: 33%; 
+  margin: 0 auto;
   padding: 20px;
   background-color: #f8f9fa;
   border-radius: 10px;
@@ -127,7 +121,7 @@ code {
 
 .sound-wave {
   flex: 1;
-  width: 30%; /* Long and thin */
+  width: 30%; 
   margin: 0 20px;
   border-radius: 10px;
 }

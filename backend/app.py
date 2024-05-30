@@ -12,15 +12,17 @@ openai_client = OpenAI(api_key=API_KEY)
 app = Flask(__name__)
 CORS(app,resources={r"/*":{"origins":"*"}})
 socketio = SocketIO(app, cors_allowed_origins='*')
-client = MongoClient('mongodb://localhost:27017/')
+client = MongoClient('mongodb://localhost:27017/') # Change from localhost
 db = client.interview_db
 assistant_id = None
 
+# Instantiating upload folder for server side audio storage
 UPLOAD_FOLDER = 'uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+# Prompt to prime the AI -- prime it as a technical recruiter
 PROMPT = "You are an recruiter, interviewing for a software engineering I position at your generic \
         software company. You will ask the user maximum 3 or 4 relevant questions pertaining to their role as a SWE. \
         If necessary and depending on the user response, you will ask follow-up questions on their answer. \
@@ -29,6 +31,7 @@ PROMPT = "You are an recruiter, interviewing for a software engineering I positi
         politely ask them to refrain from saying such things and move on with the interview. \
         If you have no more questions, end the interview with a closing remark."
 
+# Welcome message that every interview will start with
 WELCOME = "Welcome to your virtual AI Interview. I am Apriora's little brother. \
             I will be interviewing you today for your role of Software Engineer I! \
             Why don't you go ahead and tell me about yourself."
@@ -37,25 +40,16 @@ WELCOME = "Welcome to your virtual AI Interview. I am Apriora's little brother. 
 def home():
     return 'Welcome to your interview! I am a mini Apriora clone.'
 
-def create_interviewer():
-    response = openai_client.beta.assistants.create(
-        model="gpt-4o",
-        instructions=PROMPT,
-        tools=[{"type": "code_interpreter"}]
-    )
-    return response.id
-
 @app.route('/api/interviews/start', methods=['POST'])
 def start_interview():
     # Begin session and recording
     # Store session ID in storage
     import uuid, datetime
-    # global assistant_id
 
     session_id = str(uuid.uuid4())
-    # assistant_id = create_interviewer()
     start_time = datetime.datetime.now()
 
+    # Create Welcome message TTS
     response = openai_client.audio.speech.create(
         model="tts-1",
         voice="fable",
@@ -74,10 +68,12 @@ def start_interview():
         "timestamp": timestamp
     }
 
+    # Instantiate session in the database
     sessions = db.sessions
     session = {"session_id": session_id, "start_time": start_time, "status": "active", "recordings": [recording_data], "transcript": [WELCOME]}
     sessions.insert_one(session)
 
+    # Update frontend with welcome message
     socketio.emit('sync_chat', WELCOME)
     return jsonify({"message": "Interview begun", "session_id": session_id}), 201
 
@@ -94,6 +90,7 @@ def end_interview(session_id):
     if not session:
         return jsonify({"error": "Session not found"}), 404
     
+    # Update end time in the database
     end_time = datetime.datetime.now()
     updated_session = sessions.update_one({"session_id": session_id},
                                           {"$set": {"end_time": end_time, "status": "completed"}})
@@ -113,6 +110,8 @@ def process_reponse(session_id):
     sessions = db.sessions
     transcription = request.json.get('transcription')
 
+    # Organize message history to get most relevant response from AI interviewer
+    # Use OpenAI API to chat complete
     messages = [{"role": "system", "content": PROMPT}]
     starting_role = "assistant"
 
@@ -128,7 +127,9 @@ def process_reponse(session_id):
         messages=messages
     )
     
+    # Use OpenAI API to create TTS
     interviewer_response = response.choices[0].message.content
+    # Update frontend with interviewer response immediately as it is created to reduce perceived latency
     socketio.emit('sync_chat', interviewer_response)
     response = openai_client.audio.speech.create(
         model="tts-1",
@@ -136,6 +137,7 @@ def process_reponse(session_id):
         input=interviewer_response
     )
 
+    # Upload ai response to server side storage
     filename = f"ai-{uuid.uuid4()}.mp3"
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     timestamp = datetime.datetime.now()
@@ -148,6 +150,7 @@ def process_reponse(session_id):
         "timestamp": timestamp
     }
 
+    # Update DB with AI recording data and user + interviewer's responses
     result = sessions.update_one(
         {"session_id": session_id},
         {
@@ -163,6 +166,7 @@ def process_reponse(session_id):
     
     return jsonify(interviewer_response), 200
 
+# Record and transcribe user voice
 @app.route('/api/interviews/<session_id>/record', methods=['POST'])
 def record(session_id):
     import uuid
@@ -204,16 +208,20 @@ def record(session_id):
     if result.matched_count == 0:
         return jsonify({"error": "Session not found"}), 404
 
+    # Update frontend
     socketio.emit('sync_chat', transcription.text)
-    response = requests.post(f'http://localhost:5000/api/interviews/{session_id}/process_response/', json={'transcription': transcription.text})
+    # Change from localhost
+    response = requests.post(f'http://localhost:5000/api/interviews/{session_id}/process_response/', json={'transcription': transcription.text}) 
     return jsonify(response.json()), 200
 
+# Flask route to get entire conversation by session id
 @app.route('/api/interviews/<session_id>/sync_chat', methods=['GET'])
 def sync_chat(session_id):
     conversation = get_convo(session_id)
     socketio.emit('sync_chat', conversation['transcript'])
     return jsonify(conversation['transcript']), 200
 
+# Get entire conversation as list from specified session id
 def get_convo(session_id):
     sessions = db.sessions 
     conversation = sessions.find_one({"session_id": session_id}, {'_id': 0, 'transcript': 1})
@@ -221,19 +229,6 @@ def get_convo(session_id):
         return conversation
     else:
         return jsonify({"error": "Conversation not found"}), 404
-
-
-@app.route('/api/interviews/<session_id>/process', methods=['POST'])
-def process_recording(session_id):
-    # Send audio file for transcription
-    transcription = ""
-    return jsonify({"transcription": transcription, "session_id": session_id}), 200
-
-@app.route('/api/interviews/<session_id>/response', methods=['POST'])
-def ai_response(session_id):
-    # Fetch OpenAI reponse from key
-    ai_response = ""
-    return jsonify({"ai_response": ai_response, "session_id": session_id}), 200
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
