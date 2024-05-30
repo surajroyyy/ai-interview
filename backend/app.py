@@ -92,7 +92,7 @@ def start_interview():
     sessions.insert_one(session)
 
     # Update frontend with welcome message
-    socketio.emit('sync_chat', WELCOME)
+    # socketio.emit('sync_chat', WELCOME)
     return jsonify({"message": "Interview begun", "session_id": session_id}), 201
 
 @app.route('/api/interviews/<session_id>/end', methods=['POST'])

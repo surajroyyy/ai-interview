@@ -4,27 +4,25 @@ import io from 'socket.io-client';
 import "../index.css"
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/";
+const WELCOME = "Welcome to your virtual AI Interview. I am Apriora's little brother. \
+            I will be interviewing you today for your role of Software Engineer I! \
+            Why don't you go ahead and tell me about yourself."
 
 interface ChatComponentProps {
     sessionId: string;
 }
 
 const ChatComponent: React.FC<ChatComponentProps> = ({sessionId}) => {
-    const [conversation, setConversation] = useState<string[]>([]);
+    const [conversation, setConversation] = useState<string[]>([WELCOME]);
 
     useEffect(() => {
         const socket = io(API_URL);
         socket.on('sync_chat', (data) => {
-            if (conversation.length == 0) {
-                setConversation([data])
-            } else {
-                setConversation(prev => [...prev, data]);
-            }
+            setConversation(prev => [...prev, data]);
         });
-
-        // axios.get(API_URL + 'interviews/' + sessionId + '/sync_chat')
-        //     .then(response => setConversation(response.data))
-        //     .catch(error => console.error('Error fetching conversation:', error));
+        axios.get(API_URL + 'interviews/' + sessionId + '/sync_chat')
+            .then(response => setConversation(response.data))
+            .catch(error => console.error('Error fetching conversation:', error));
 
         return () => {socket.off('sync_chat')};
     }, [sessionId]);

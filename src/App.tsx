@@ -22,7 +22,7 @@ function App() {
   return (
     <div className="App">
       <header>
-        <h1 className="title">Welcome to your <span className="interview">Interview</span></h1>
+        <h1 className="title">Apriora <span className="interview">Mini</span></h1>
       </header>
       <div className="content">
         {!sessionId? (
