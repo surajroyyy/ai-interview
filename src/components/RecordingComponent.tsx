@@ -47,10 +47,10 @@ const RecordingComponent: React.FC<RecordingComponentProps> = ({sessionId}) => {
           strokeColor="#000000"
           backgroundColor="#4f6ee0" />
         <div>
-          <button onClick={startRecording} type="button">Start Recording</button>
-          <button onClick={stopRecording} type="button">Stop Recording</button>
+          <button onClick={startRecording} type="button">Start</button>
+          <button onClick={stopRecording} type="button">Stop</button>
         </div>
-        {blobURL && <audio src={blobURL} controls />}
+        {/* {blobURL && <audio src={blobURL} controls />} */}
       </div>
     );
   };

@@ -23,9 +23,12 @@ def start_interview():
     import uuid, datetime
     session_id = str(uuid.uuid4())
     start_time = datetime.datetime.now()
+    WELCOME = "Welcome to your virtual AI Interview. I am Apriora's little brother. \
+                I will be interviewing you today for your role of Software Engineer I! \
+                Why don't you go ahead and tell me about yourself."
 
     sessions = db.sessions
-    session = {"session_id": session_id, "start_time": start_time, "status": "active"}
+    session = {"session_id": session_id, "start_time": start_time, "status": "active", "transcript": [WELCOME]}
     sessions.insert_one(session)
 
     return jsonify({"message": "Interview begun", "session_id": session_id}), 201
@@ -82,10 +85,24 @@ def record(session_id):
         "timestamp": timestamp
     }
 
+    PROMPT = "You are an interviewer for a software engineering I position. \
+                You will ask the user relevant questions pertaining to their role as SWE. \
+                If necessary and depending on the user response, you will ask follow-up questions on their answer."
+
+    completion = openai_client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": PROMPT},
+            {"role": "user", "content": transcription.text}
+        ]
+    )
+
+    interviewer_response = completion.choices[0].message.content
+
     sessions = db.sessions
     result = sessions.update_one(
         {"session_id": session_id},
-        {"$push": {"recordings": recording_data, "transcript": transcription.text}}
+        {"$push": {"recordings": recording_data, "transcript": {"$each": [transcription.text, interviewer_response] }}}
     )
 
     if result.matched_count == 0:
@@ -93,11 +110,15 @@ def record(session_id):
 
     return jsonify({"message": "Recording saved successfully", "file_path": filepath, "timestamp": timestamp, "session_id": session_id}), 200
 
-# @app.route('/api/interviews/<session_id>/record/stop', methods=['POST'])
-# def stop_recording(session_id):
-#     # Stop recording logic (client-side)
-#     # Store recordings in storage (MongoDB)
-#     return jsonify({"message": "Recording ended", "session_id": session_id}), 200
+@app.route('/api/interviews/<session_id>/get_conversation', methods=['GET'])
+def get_conversation(session_id):
+    sessions = db.sessions
+    conversation = sessions.find_one({"session_id": session_id}, {'_id': 0, 'transcript': 1})
+
+    if conversation:
+        return jsonify(conversation['transcript']), 200
+    else:
+        return jsonify({"error": "Session not found"}), 404
 
 @app.route('/api/interviews/<session_id>/process', methods=['POST'])
 def process_recording(session_id):

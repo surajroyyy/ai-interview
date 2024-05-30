@@ -3,6 +3,8 @@ import logo from './logo.svg';
 import './App.css';
 import RecordingComponent from './components/RecordingComponent';
 import StartInterviewComponent from './components/StartInterviewComponent';
+import EndButtonComponent from './components/EndInterviewComponent';
+import ChatComponent from './components/ChatComponent';
 
 function App() {
 
@@ -15,14 +17,17 @@ function App() {
   return (
     <div className="App">
       <header>
-        <h1>Welcome to your</h1>
-        <h1>Interview</h1>
+        <h1>Welcome to your Interview</h1>
       </header>
       <body>
         {!sessionId? (
           <StartInterviewComponent onStart={handleStart}/>
         ) : (
-          <RecordingComponent sessionId={sessionId}/>
+          <div>
+            <RecordingComponent sessionId={sessionId}/>
+            <EndButtonComponent sessionId={sessionId}/>
+            <ChatComponent sessionId={sessionId}/>
+          </div>
         )}
       </body>
     </div>
