@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from flask_socketio import SocketIO, emit
 from pymongo import MongoClient
 from openai import OpenAI
 import os
@@ -9,6 +10,7 @@ openai_client = OpenAI(api_key=API_KEY)
 
 app = Flask(__name__)
 CORS(app)
+socketio = SocketIO(app, cors_allowed_origins='*')
 client = MongoClient('mongodb://localhost:27017/')
 db = client.interview_db
 
@@ -110,15 +112,16 @@ def record(session_id):
 
     return jsonify({"message": "Recording saved successfully", "file_path": filepath, "timestamp": timestamp, "session_id": session_id}), 200
 
-@app.route('/api/interviews/<session_id>/get_conversation', methods=['GET'])
-def get_conversation(session_id):
+@app.route('/api/interviews/<session_id>/sync_chat', methods=['GET'])
+def sync_chat(session_id):
     sessions = db.sessions
     conversation = sessions.find_one({"session_id": session_id}, {'_id': 0, 'transcript': 1})
 
     if conversation:
+        socketio.emit('sync_chat', conversation['transcript'], room=session_id)
         return jsonify(conversation['transcript']), 200
     else:
-        return jsonify({"error": "Session not found"}), 404
+         return jsonify({"error": "Conversation not found"}), 404
 
 @app.route('/api/interviews/<session_id>/process', methods=['POST'])
 def process_recording(session_id):

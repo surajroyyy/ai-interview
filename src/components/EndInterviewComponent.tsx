@@ -17,7 +17,7 @@ const EndButtonComponent: React.FC<EndButtonProps> = ({sessionId}) => {
     return (
         <div>
             <button onClick={handleClick} type="button">
-                End Interview.
+                End Interview
             </button>
         </div>
     )

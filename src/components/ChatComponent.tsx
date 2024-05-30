@@ -1,19 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:5000');
 
 interface ChatComponentProps {
     sessionId: string;
 }
 
 const ChatComponent: React.FC<ChatComponentProps> = ({sessionId}) => {
-    const [conversation, setConversation] = useState([])
+    const [conversation, setConversation] = useState([]);
 
     useEffect(() => {
-        axios.get('http://localhost:5000/api/interviews/' + sessionId + '/get_conversation')
-        .then(response => response.data)
-        .then(data => setConversation(data))
-        .catch(error => console.error('Error fetching conversation:', error))
-    }, [sessionId])
+        socket.on('sync_chat', data => {
+            setConversation(data)
+        });
+
+        axios.get('http://localhost:5000/api/interviews/' + sessionId + '/sync_chat')
+            .then(response => setConversation(response.data))
+            .catch(error => console.error('Error fetching conversation:', error));
+
+        return () => {socket.off('sync_chat')};
+    }, [sessionId]);
 
     return (
         <div>
