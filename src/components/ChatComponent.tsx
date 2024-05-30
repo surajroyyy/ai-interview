@@ -23,6 +23,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({sessionId}) => {
         return () => {socket.off('sync_chat')};
     }, [sessionId]);
 
+
     return (
         <div>
             {conversation.map((entry, index) => (
