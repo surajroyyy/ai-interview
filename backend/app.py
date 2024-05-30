@@ -11,7 +11,7 @@ import requests
 API_KEY = "sk-proj-Afz7UVKlb8n6WVYYGTgNT3BlbkFJR6u07K4xuIeEMgRVvR9S"
 openai_client = OpenAI(api_key=API_KEY)
 
-app = Flask(__name__, static_folder='./build', static_url_path='')
+app = Flask(__name__, static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'build'), static_url_path='')
 CORS(app,resources={r"/*":{"origins":"*"}})
 socketio = SocketIO(app, cors_allowed_origins='*')
 
@@ -45,13 +45,16 @@ WELCOME = "Welcome to your virtual AI Interview. I am Apriora's little brother. 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve(path):
-    if path != "" and os.path.exists(app.static_folder + '/' + path):
+    print("path: " + path)
+    print("Static folder: " + app.static_folder)
+    print("Full path: " + os.path.join(app.static_folder, path))
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, path)
     else:
         return send_from_directory(app.static_folder, 'index.html')
 
-@app.route('/')
-def home():
+@app.route('/api/test')
+def test_api():
     return 'Welcome to your interview! I am a mini Apriora clone.'
 
 @app.route('/api/interviews/start', methods=['POST'])
