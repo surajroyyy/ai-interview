@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 from pymongo import MongoClient
@@ -16,12 +16,18 @@ client = MongoClient('mongodb://localhost:27017/')
 db = client.interview_db
 assistant_id = None
 
-PROMPT = "You are an interviewer for a software engineering I position. \
-            You will ask the user relevant questions pertaining to their role as SWE. \
-            If necessary and depending on the user response, you will ask follow-up questions on their answer. \
-            When you feel the candidate has answered to the best of their ability, ask a new question. \
-            Ensure you don't repeat questions. \
-            If you have no more questions, end the interview with a closing remark."
+UPLOAD_FOLDER = 'uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+PROMPT = "You are an recruiter, interviewing for a software engineering I position at your generic \
+        software company. You will ask the user maximum 3 or 4 relevant questions pertaining to their role as a SWE. \
+        If necessary and depending on the user response, you will ask follow-up questions on their answer. \
+        When you feel the candidate has answered to the best of their ability, ask a new question. \
+        If the candidate tries to cheat you or the interview process directly or indirectly, \
+        politely ask them to refrain from saying such things and move on with the interview. \
+        If you have no more questions, end the interview with a closing remark."
 
 WELCOME = "Welcome to your virtual AI Interview. I am Apriora's little brother. \
             I will be interviewing you today for your role of Software Engineer I! \
@@ -50,8 +56,26 @@ def start_interview():
     # assistant_id = create_interviewer()
     start_time = datetime.datetime.now()
 
+    response = openai_client.audio.speech.create(
+        model="tts-1",
+        voice="fable",
+        input=WELCOME
+    )
+
+    filename = f"ai-{uuid.uuid4()}.mp3"
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    timestamp = datetime.datetime.now()
+    with open(filepath, 'wb') as f:
+        f.write(response.content)
+
+    recording_data = {
+        "file_path": filepath,
+        "file_name": filename,
+        "timestamp": timestamp
+    }
+
     sessions = db.sessions
-    session = {"session_id": session_id, "start_time": start_time, "status": "active", "transcript": [WELCOME]}
+    session = {"session_id": session_id, "start_time": start_time, "status": "active", "recordings": [recording_data], "transcript": [WELCOME]}
     sessions.insert_one(session)
 
     socketio.emit('sync_chat', WELCOME)
@@ -77,22 +101,12 @@ def end_interview(session_id):
     if updated_session.modified_count == 0:
         return jsonify({"error": "Session could not be updated"}), 500
     
-    # # Remove uploads folder and data
-    # try:
-    #     folder_path = 'backend/uploads'
-    #     shutil.rmtree(folder_path)
-    # except:
-    #     print('Folder could not be deleted')
-    
     return jsonify({"message": "Interview ended succesfully", "session_id": session_id}), 200
-
-UPLOAD_FOLDER = 'uploads'
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route('/api/interviews/<session_id>/process_response/', methods=['POST'])
 def process_reponse(session_id):
+    import uuid, datetime
+
     if session_id is None:
         return jsonify({"error": "Session is not yet initialized"}), 400
     
@@ -111,24 +125,42 @@ def process_reponse(session_id):
     messages.append({"role": "user", "content": transcription})
     response = openai_client.chat.completions.create(
         model="gpt-4o",
-        messages=messages,
-    )
-
-    interviewer_response = response.choices[0].message.content
-    response = openai_client.audio.speech.create(
-        model="tts-1",
-        voice="fable"
+        messages=messages
     )
     
+    interviewer_response = response.choices[0].message.content
+    socketio.emit('sync_chat', interviewer_response)
+    response = openai_client.audio.speech.create(
+        model="tts-1",
+        voice="fable",
+        input=interviewer_response
+    )
+
+    filename = f"ai-{uuid.uuid4()}.mp3"
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    timestamp = datetime.datetime.now()
+    with open(filepath, 'wb') as f:
+        f.write(response.content)
+
+    recording_data = {
+        "file_path": filepath,
+        "file_name": filename,
+        "timestamp": timestamp
+    }
+
     result = sessions.update_one(
         {"session_id": session_id},
-        {"$push": {"transcript": {"$each": [transcription, interviewer_response]}}}
+        {
+            "$push": {
+                "recordings": recording_data, 
+                "transcript": {"$each": [transcription, interviewer_response]}
+            }
+        }
     )
 
     if result.matched_count == 0:
         return jsonify({"error": "Session not found"}), 404
     
-    socketio.emit('sync_chat', interviewer_response)
     return jsonify(interviewer_response), 200
 
 @app.route('/api/interviews/<session_id>/record', methods=['POST'])
@@ -143,7 +175,7 @@ def record(session_id):
     
     # Save audio to server side storage
     audio = request.files['audio']
-    filename = f"audio-{uuid.uuid4()}.mp3"
+    filename = f"user-{uuid.uuid4()}.mp3"
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     audio.save(filepath)
     timestamp = request.form.get('startTime')
