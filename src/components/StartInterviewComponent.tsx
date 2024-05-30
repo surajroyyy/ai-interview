@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import "../index.css"
 
 interface StartButtonProps {
     onStart: (sessionId: string) => void;
@@ -18,8 +19,8 @@ const StartInterviewComponent: React.FC<StartButtonProps> = ({onStart}) => {
 
     return (
         <div>
-            <button onClick={handleClick} type="button">
-                Begin Interview!
+            <button className="begin-interview" onClick={handleClick} type="button">
+                Begin
             </button>
         </div>
     )

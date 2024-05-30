@@ -16,9 +16,9 @@ const ChatComponent: React.FC<ChatComponentProps> = ({sessionId}) => {
             setConversation(prev => [...prev, data]);
         });
 
-        // axios.get('http://localhost:5000/api/interviews/' + sessionId + '/sync_chat')
-        //     .then(response => setConversation(response.data))
-        //     .catch(error => console.error('Error fetching conversation:', error));
+        axios.get('http://localhost:5000/api/interviews/' + sessionId + '/sync_chat')
+            .then(response => setConversation(response.data))
+            .catch(error => console.error('Error fetching conversation:', error));
 
         return () => {socket.off('sync_chat')};
     }, [sessionId]);

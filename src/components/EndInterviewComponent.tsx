@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import '../index.css'
 
 interface EndButtonProps {
     sessionId: string;
@@ -16,8 +17,8 @@ const EndButtonComponent: React.FC<EndButtonProps> = ({sessionId}) => {
 
     return (
         <div>
-            <button onClick={handleClick} type="button">
-                End Interview
+            <button className="end-interview" onClick={handleClick} type="button">
+                End Session
             </button>
         </div>
     )

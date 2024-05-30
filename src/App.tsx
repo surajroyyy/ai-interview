@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import './index.css'
 import RecordingComponent from './components/RecordingComponent';
 import StartInterviewComponent from './components/StartInterviewComponent';
 import EndButtonComponent from './components/EndInterviewComponent';
@@ -17,9 +18,9 @@ function App() {
   return (
     <div className="App">
       <header>
-        <h1>Welcome to your Interview</h1>
+        <h1 className="title">Welcome to your <span className="interview">Interview</span></h1>
       </header>
-      <body>
+      <div className="content">
         {!sessionId? (
           <StartInterviewComponent onStart={handleStart}/>
         ) : (
@@ -29,7 +30,7 @@ function App() {
             <ChatComponent sessionId={sessionId}/>
           </div>
         )}
-      </body>
+      </div>
     </div>
   );
 

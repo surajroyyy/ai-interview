@@ -21,7 +21,7 @@ PROMPT = "You are an interviewer for a software engineering I position. \
             If necessary and depending on the user response, you will ask follow-up questions on their answer. \
             When you feel the candidate has answered to the best of their ability, ask a new question. \
             Ensure you don't repeat questions. \
-            If you have no more questions, end the interview with a closing remark. "
+            If you have no more questions, end the interview with a closing remark."
 
 WELCOME = "Welcome to your virtual AI Interview. I am Apriora's little brother. \
             I will be interviewing you today for your role of Software Engineer I! \
@@ -60,7 +60,7 @@ def start_interview():
 @app.route('/api/interviews/<session_id>/end', methods=['POST'])
 def end_interview(session_id):
     import datetime
-    global assistant_id
+    import shutil
 
     # End session
     # Update session status in storage
@@ -76,6 +76,13 @@ def end_interview(session_id):
 
     if updated_session.modified_count == 0:
         return jsonify({"error": "Session could not be updated"}), 500
+    
+    # # Remove uploads folder and data
+    # try:
+    #     folder_path = 'backend/uploads'
+    #     shutil.rmtree(folder_path)
+    # except:
+    #     print('Folder could not be deleted')
     
     return jsonify({"message": "Interview ended succesfully", "session_id": session_id}), 200
 
@@ -102,13 +109,16 @@ def process_reponse(session_id):
         role = "assistant" if role == "user" else "user"
 
     messages.append({"role": "user", "content": transcription})
-    
     response = openai_client.chat.completions.create(
         model="gpt-4o",
         messages=messages,
     )
 
     interviewer_response = response.choices[0].message.content
+    response = openai_client.audio.speech.create(
+        model="tts-1",
+        voice="fable"
+    )
     
     result = sessions.update_one(
         {"session_id": session_id},
@@ -166,11 +176,11 @@ def record(session_id):
     response = requests.post(f'http://localhost:5000/api/interviews/{session_id}/process_response/', json={'transcription': transcription.text})
     return jsonify(response.json()), 200
 
-# @app.route('/api/interviews/<session_id>/sync_chat', methods=['GET'])
-# def sync_chat(session_id):
-#     conversation = get_convo(session_id)
-#     socketio.emit('sync_chat', conversation['transcript'])
-#     return jsonify(conversation['transcript']), 200
+@app.route('/api/interviews/<session_id>/sync_chat', methods=['GET'])
+def sync_chat(session_id):
+    conversation = get_convo(session_id)
+    socketio.emit('sync_chat', conversation['transcript'])
+    return jsonify(conversation['transcript']), 200
 
 def get_convo(session_id):
     sessions = db.sessions 

@@ -1,10 +1,40 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* header {
+  background-color: #333333;
+  color: white;
+  top: 0;
+} */
+
+header {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 12.5%;
+  background-color: #333333;
+  color: #fff; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+  z-index: 1000; 
+}
+
+.title {
+  text-transform: uppercase;
+  font-weight: 200;
+}
+
+.interview {
+  color: #6684ff;
+  font-weight: 900;
+}
+
+.content {
+  margin-top: 7.5%; /* Push content below the header */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 87.5%; /* Remaining height of the page */
 }
 
 code {
@@ -15,4 +45,131 @@ code {
 .messages-container {
   display: flex;
   flex-direction: column-reverse;
+  padding: 10px;
 }
+
+.message {
+  max-width: 60%;
+  margin: 10px 50px;
+  padding: 10px;
+  border-radius: 10px;
+  word-wrap: normal;
+  text-align: left
+}
+
+.user {
+  align-self: flex-start;
+  background-color: #f1f1f1;
+  color: #333;
+  box-shadow: 5px 5px 12px lightblue;
+}
+
+.interviewer {
+  align-self: flex-end;
+  background-color: #6684ff;
+  color: #fff;
+  box-shadow: 5px 5px 15px lightblue;
+}
+
+.start-recording, .stop-recording {
+  background-color: #fff; 
+  border: 2px solid #ccc; 
+  border-radius: 50%; 
+  width: 50px;
+  height: 50px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.3s, border-color 0.3s; 
+}
+
+.start-recording:hover {
+  background-color: #f0f0f0; 
+  border-color: #6684ff;
+}
+
+.stop-recording:hover {
+  background-color: #f0f0f0;
+  border-color: #ff0000; 
+}
+
+.start-recording i, .stop-recording i {
+  font-size: 16px; /* Font size of the icons */
+  color: #333; /* Dark gray icon color */
+}
+
+.start-recording:hover i {
+  color: #6684ff; /* Blue icon color on hover */
+}
+
+.start-recording:focus i {
+  color: #6684ff; /* Blue icon color on hover */
+}
+
+.stop-recording:hover i {
+  color: #ff0000; /* Red icon color on hover */
+}
+
+.recorder-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 33%; /* 1/4 of the page */
+  margin: 0 auto; /* Center the container */
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0 0 10px coral;
+}
+
+.sound-wave {
+  flex: 1;
+  width: 30%; /* Long and thin */
+  margin: 0 20px;
+  border-radius: 10px;
+}
+
+.begin-interview {
+  background-color: #6684ff;
+  border: none;
+  border-radius: 10px; 
+  color: #fff;
+  font-size: 24px;
+  padding: 10px 20px;
+  cursor: pointer; 
+  outline: none; 
+  text-transform: uppercase;
+  font-weight: 900;
+  transition: transform 0.2s, background-color 0.2s;
+  font-family: Helvetica, sans-serif;
+  margin: 0 auto;
+}
+
+.begin-interview:hover {
+  transform: scale(1.1); 
+  background-color: #0056b3; 
+}
+
+.end-interview {
+  background-color: #888888;
+  border: none;
+  border-radius: 10px; 
+  color: #fff;
+  font-size: 10px;
+  padding: 10px 10px;
+  margin-top: 15px;
+  cursor: pointer; 
+  outline: none; 
+  text-transform: uppercase;
+  font-weight: bold;
+  transition: transform 0.2s, background-color 0.2s;
+  font-family: Helvetica, sans-serif
+}
+
+.end-interview:hover {
+  transform: scale(1.1);
+  background-color: crimson; 
+}
+
