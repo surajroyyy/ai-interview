@@ -91,7 +91,6 @@ def start_interview():
     sessions.insert_one(session)
 
     # Update frontend with welcome message
-    # socketio.emit('sync_chat', WELCOME)
     return jsonify({"message": "Interview begun", "session_id": session_id}), 201
 
 @app.route('/api/interviews/<session_id>/end', methods=['POST'])
@@ -232,11 +231,11 @@ def record(session_id):
     return jsonify(response.json()), 200
 
 # Flask route to get entire conversation by session id
-@app.route('/api/interviews/<session_id>/sync_chat', methods=['GET'])
-def sync_chat(session_id):
-    conversation = get_convo(session_id)
-    socketio.emit('sync_chat', conversation['transcript'])
-    return jsonify(conversation['transcript']), 200
+# @app.route('/api/interviews/<session_id>/sync_chat', methods=['GET'])
+# def sync_chat(session_id):
+#     conversation = get_convo(session_id)
+#     socketio.emit('sync_chat', conversation['transcript'])
+#     return jsonify(conversation['transcript']), 200
 
 # Get entire conversation as list from specified session id
 def get_convo(session_id):
