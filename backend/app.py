@@ -245,6 +245,14 @@ def get_convo(session_id):
         return conversation
     else:
         return jsonify({"error": "Conversation not found"}), 404
+    
+def create_recording(session_id):
+    sessions = db.sessions 
+    recordings = sessions.find_one({"session_id": session_id}, {'_id': 0, 'recordings': 1})
+
+    output_file = None
+    for filename in enumerate(recordings):
+        print(filename)
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
