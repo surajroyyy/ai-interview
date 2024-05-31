@@ -16,6 +16,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({sessionId}) => {
 
     useEffect(() => {
         const url = window.location.origin
+        console.log(url)
         const socket = io(url);
         socket.on('sync_chat', (data) => {
             setConversation(prev => [...prev, data]);
