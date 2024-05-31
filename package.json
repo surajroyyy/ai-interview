@@ -14,6 +14,8 @@
     "axios": "^1.7.2",
     "flask-cors": "^0.0.1",
     "openai": "^4.0.0",
+    "pubnub": "^7.6.3",
+    "pubnub-react": "^3.0.2",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "react-mic": "^12.4.6",
@@ -50,7 +52,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
   }
 }

@@ -5,19 +5,27 @@ from flask_pymongo import PyMongo
 from pymongo import MongoClient
 from openai import OpenAI
 from dotenv import load_dotenv
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub import PubNub
 import os
 import requests
 
 API_KEY = "sk-proj-Afz7UVKlb8n6WVYYGTgNT3BlbkFJR6u07K4xuIeEMgRVvR9S"
 openai_client = OpenAI(api_key=API_KEY)
 
+pb_config = PNConfiguration()
+# pb_config.subscribe_key = '_mySubscribeKey_'
+pb_config.publish_key = 'pub-c-75a10f03-1958-47bd-a5af-5f40b9623158'
+pb_config.user_id = 'apriora'
+pubnub = PubNub(pb_config)
+
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'build'), static_url_path='')
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True, allow_headers=["Content-Type", "Authorization"], methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 socketio = SocketIO(app, cors_allowed_origins='*')
 
 mongo_uri = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
-client = MongoClient(mongo_uri)
-db = client.interview_db
+mongo_client = MongoClient(mongo_uri)
+db = mongo_client.interview_db
 assistant_id = None
 
 api_url = os.getenv('REACT_APP_API_URL', 'http://localhost:5000/')
@@ -146,7 +154,10 @@ def process_reponse(session_id):
     # Use OpenAI API to create TTS
     interviewer_response = response.choices[0].message.content
     # Update frontend with interviewer response immediately as it is created to reduce perceived latency
-    socketio.emit('sync_chat', interviewer_response)
+    # socketio.emit('sync_chat', interviewer_response)
+    print("Before interview response pubnubbed")
+    pubnub.publish().channel("socket").message(interviewer_response)
+    print("After interview response pubnubbed")
     response = openai_client.audio.speech.create(
         model="tts-1",
         voice="fable",
@@ -225,7 +236,8 @@ def record(session_id):
         return jsonify({"error": "Session not found"}), 404
 
     # Update frontend
-    socketio.emit('sync_chat', transcription.text)
+    # socketio.emit('sync_chat', transcription.text)
+    pubnub.publish().channel("socket").message(transcription.text)
     # Change from localhost
     response = requests.post(f'{api_url}/api/interviews/{session_id}/process_response/', json={'transcription': transcription.text}) 
     return jsonify(response.json()), 200

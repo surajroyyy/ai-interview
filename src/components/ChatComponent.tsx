@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import io from 'socket.io-client';
+import {usePubNub } from 'pubnub-react';
+// import io from 'socket.io-client';
 import "../index.css"
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/";
@@ -13,18 +14,32 @@ interface ChatComponentProps {
 
 const ChatComponent: React.FC<ChatComponentProps> = ({sessionId}) => {
     const [conversation, setConversation] = useState<string[]>([WELCOME]);
+    const pubnub = usePubNub();
 
+    // useEffect(() => {
+    //     const url = window.location.origin
+    //     console.log(url)
+    //     const socket = io(url);
+    //     socket.on('sync_chat', (data) => {
+    //         setConversation(prev => [...prev, data]);
+    //     });
+
+    //     return () => {socket.off('sync_chat')};
+    // }, [sessionId]);
+    
     useEffect(() => {
-        const url = window.location.origin
-        console.log(url)
-        const socket = io(url);
-        socket.on('sync_chat', (data) => {
-            setConversation(prev => [...prev, data]);
+        pubnub.subscribe({ channels: ['socket'] });
+        pubnub.addListener({
+          message: (event) => {
+            console.log(event.message)
+            setConversation((msgs) => [...msgs, event.message]);
+          }
         });
-
-        return () => {socket.off('sync_chat')};
-    }, [sessionId]);
-
+    
+        return () => {
+          pubnub.unsubscribeAll();
+        };
+      }, []);
 
     return (
         <div className="messages-container">
