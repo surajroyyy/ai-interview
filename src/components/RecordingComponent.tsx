@@ -12,12 +12,9 @@ interface RecordingComponentProps {
 const RecordingComponent: React.FC<RecordingComponentProps> = ({sessionId}) => {
     const [record, setRecord] = useState(false);
     const [blobURL, setBlobURL] = useState('');
-    const [startTime, setStartTime] = useState<string | null>(null)
-  
+      
     const startRecording = () => {
       setRecord(true);
-      const currentTime = new Date();
-      setStartTime(currentTime.toISOString());
     };
   
     const stopRecording = () => {
@@ -29,11 +26,9 @@ const RecordingComponent: React.FC<RecordingComponentProps> = ({sessionId}) => {
       // Send the audio blob to the backend
       const formData = new FormData();
       formData.append('audio', recordedBlob.blob, 'recording.wav');
-      formData.append('startTime', startTime || '')
       axios.post(API_URL + 'api/interviews/' + sessionId + '/record', formData)
         .then(response => {
           console.log('Audio file successfully sent to the server', response.data);
-          console.log("startTime: ", startTime);
         })
         .catch(error => {
           console.error('Error sending audio file to the server', error);

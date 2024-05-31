@@ -31,7 +31,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({sessionId}) => {
         pubnub.subscribe({ channels: ['socket'] });
         pubnub.addListener({
           message: (event) => {
-            console.log(event.message)
+            console.log("PubNub Frontend: " + event.message)
             setConversation((msgs) => [...msgs, event.message]);
           }
         });

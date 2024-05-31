@@ -11,7 +11,7 @@ import { PubNubProvider } from 'pubnub-react';
 const pubnub = new PubNub({
   publishKey: 'pub-c-75a10f03-1958-47bd-a5af-5f40b9623158',
   subscribeKey: 'sub-c-9882b2d9-66e1-4299-87aa-075ef1bd0ed7',
-  uuid: 'apriora'
+  userId: 'apriora'
 });
 
 function App() {
