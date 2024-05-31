@@ -16,8 +16,10 @@ openai_client = OpenAI(api_key=API_KEY)
 pb_config = PNConfiguration()
 pb_config.subscribe_key = 'sub-c-9882b2d9-66e1-4299-87aa-075ef1bd0ed7'
 pb_config.publish_key = 'pub-c-75a10f03-1958-47bd-a5af-5f40b9623158'
-pb_config.user_id = 'apriora'
+pb_config.user_id = 'serverid'
 pubnub = PubNub(pb_config)
+
+
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'build'), static_url_path='')
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True, allow_headers=["Content-Type", "Authorization"], methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
@@ -156,7 +158,7 @@ def process_reponse(session_id):
     # Update frontend with interviewer response immediately as it is created to reduce perceived latency
     # socketio.emit('sync_chat', interviewer_response)
     print("Before interview response pubnubbed")
-    pubnub.publish().channel("apriora.socket").message(str(interviewer_response)).pn_async(lambda envelope, status: print("We here!", status))
+    pubnub.publish().channel("socket").message([interviewer_response]).pn_async(lambda envelope, status: print("We here!", status.is_error()))
     print("After interview response pubnubbed")
     response = openai_client.audio.speech.create(
         model="tts-1",
@@ -237,7 +239,7 @@ def record(session_id):
 
     # Update frontend
     # socketio.emit('sync_chat', transcription.text)
-    pubnub.publish().channel("apriora.socket").message(str(transcription.text))
+    pubnub.publish().channel("socket").message([str(transcription.text)]).pn_async(lambda envelope, status: print("We here!", status.is_error()))
     # Change from localhost
     response = requests.post(f'{api_url}/api/interviews/{session_id}/process_response/', json={'transcription': transcription.text}) 
     return jsonify(response.json()), 200
