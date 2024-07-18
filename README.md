@@ -1,4 +1,4 @@
-# Apriora Mini-Clone
+# Mini AI Interviewer
 
 Welcome to your AI Interview!
 
