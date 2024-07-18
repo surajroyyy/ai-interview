@@ -11,11 +11,13 @@ import os
 import requests
 
 API_KEY = os.getenv('API_KEY')
+PUB_KEY = os.getenv('PUB_KEY')
+SUB_KEY = os.getenv('SUB_KEY')
 openai_client = OpenAI(api_key=API_KEY)
 
 pb_config = PNConfiguration()
-pb_config.subscribe_key = 'sub-c-9882b2d9-66e1-4299-87aa-075ef1bd0ed7'
-pb_config.publish_key = 'pub-c-75a10f03-1958-47bd-a5af-5f40b9623158'
+pb_config.subscribe_key = SUB_KEY
+pb_config.publish_key = PUB_KEY
 pb_config.user_id = 'serverid'
 pubnub = PubNub(pb_config)
 
