@@ -10,7 +10,7 @@ from pubnub.pubnub import PubNub
 import os
 import requests
 
-API_KEY = "sk-proj-Afz7UVKlb8n6WVYYGTgNT3BlbkFJR6u07K4xuIeEMgRVvR9S"
+API_KEY = os.getenv('API_KEY')
 openai_client = OpenAI(api_key=API_KEY)
 
 pb_config = PNConfiguration()
